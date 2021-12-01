@@ -1,7 +1,3 @@
-import time
-import sys
-
-
 class ProgressBar:
     def __init__(self, end, width=10):
         self._progress = 0
@@ -23,9 +19,3 @@ class ProgressBar:
 
     def update_stdout(self):
         print(f"\r{str(self)}", end="" if self._progress < self.end else "\n")
-
-#
-# p = ProgressBar(10, 20)
-# for i in range(1, 11):
-#     time.sleep(0.5)
-#     p.progress = i

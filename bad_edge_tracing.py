@@ -6,13 +6,12 @@ from progress_bar import ProgressBar
 def trace_img(img, threshold=3, cvt_grayscale=True, clean_noise=True):
 
     """
-    lower thresholds (1-3) work better on drawings (tests 1 and b_w), and higher on irl images (3-7)
+    lower thresholds (1-3) work better on drawings, and higher on irl images (3-7)
 
     In order to be considered a border, a pixel must have a difference of color greater than the threshold to ALL of its
     neighbors (For some reason doing this with just ONE of its neighbors results in weird artifacts).
 
-    cvt_grayscale is faster, and tends to removes random pixels detected as borders, but may cause some borders on
-    to not be seen. works best on drawn images.
+    cvt_grayscale is recommended, but can cause some borders to be overlooked.
 
     clean_noise removes "border" pixels that are not surrounded by other border pixels
     """
@@ -58,7 +57,7 @@ def trace_img(img, threshold=3, cvt_grayscale=True, clean_noise=True):
             if r_num % 100 == 0 or r_num == p_bar.end:
                 p_bar.progress = r_num
 
-    if clean_noise:  # Suggestion: Count "connected" pixels?
+    if clean_noise:
         noise_bar = ProgressBar(end=img.shape[0] - 1)
         print("Cleaning noise...")
 
