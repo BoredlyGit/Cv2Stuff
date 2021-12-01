@@ -1,0 +1,5 @@
+2020Vision/
+venv/
+.idea/
+__pycache__/
+notes.md
