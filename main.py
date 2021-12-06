@@ -3,15 +3,21 @@ import numpy
 import numpy as np
 
 all_contours = False
+use_hsv = True
 
-og_img = cv2.imread("images/test_3.jpg")
-img = cv2.GaussianBlur(og_img, (3, 3), 0)
+img = cv2.imread("images/test_1.jpg")
+# img = cv2.GaussianBlur(og_img, (3, 3), 0)
 # No grayscale cause using color masks
 
-# TODO: improve ranges to accommodate tests 3 & 4 (seems like upper limit needs increasing) (maybe hsv)
-lit_ball_mask = cv2.inRange(img, (1, 110, 110), (70, 220, 240))
-shadowed_ball_mask = cv2.inRange(img, (0, 50, 50), (25, 130, 130))
-mask = lit_ball_mask + shadowed_ball_mask
+if use_hsv:
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+    mask = cv2.inRange(img, (20, 100, 20), (40, 255, 255))
+else:
+    # TODO: improve ranges to accommodate tests 3 & 4 (seems like upper limit needs increasing) (maybe hsv)
+    lit_ball_mask = cv2.inRange(img, (1, 110, 110), (70, 220, 240))
+    shadowed_ball_mask = cv2.inRange(img, (0, 50, 50), (25, 130, 130))
+    mask = lit_ball_mask + shadowed_ball_mask
+
 
 # try to detect edges of overlapping balls
 ball_edges = cv2.GaussianBlur(cv2.Canny(img, 0, 250), (3, 3), 0)
