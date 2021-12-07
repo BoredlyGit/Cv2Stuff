@@ -4,7 +4,7 @@ import numpy as np
 
 all_contours = False
 
-og_img = cv2.imread("images/test_3.jpg")
+og_img = cv2.imread("images/test_1.jpg")
 img = cv2.GaussianBlur(og_img, (3, 3), 0)
 # No grayscale cause using color masks
 
@@ -30,7 +30,7 @@ for contour in contours:
     print(3.14 * cv2.minEnclosingCircle(contour)[1] ** 2, cv2.contourArea(contour), ((3.14 * cv2.minEnclosingCircle(contour)[1] ** 2)/10), (3.14 * cv2.minEnclosingCircle(contour)[1] ** 2 - cv2.contourArea(contour)))
 
 if not all_contours:
-    # check size and shape
+    # check size and shape, size must be above 500px, and the contour must cover at least 75% of its minEnclosingCircle
     contours = [contour for contour in contours if cv2.contourArea(contour) > 500 and (3.14 * cv2.minEnclosingCircle(contour)[1] ** 2 - cv2.contourArea(contour) < (3.14 * cv2.minEnclosingCircle(contour)[1] ** 2)/4) ]
 
 circles = [cv2.minEnclosingCircle(contour) for contour in contours]
