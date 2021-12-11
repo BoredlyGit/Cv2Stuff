@@ -1,0 +1,28 @@
+{
+  "_explanations":  {
+    "ball_min_area": "Minimum area of a ball (px?).",
+    "ball_min_coverage": "minimum percentage (as decimal) of its minEnclosingCircle a ball must cover.",
+    "ball_hsv_min": "Minimum HSV values (inRange)",
+    "ball_hsv_max": "Maximum HSV values (inRange)",
+    "img_resize": "Dimensions to resize the image to (can be null to keep original size)",
+
+    "notes": "If a profile is missing any values, they will be filled in from default,"
+  },
+
+  "default":  {
+    "name": "default",
+    "ball_min_area": 500,
+    "ball_min_coverage": 0.60,
+    "ball_hsv_min": [20, 90, 20],
+    "ball_hsv_max": [30, 255, 255],
+    "img_resize": null
+  },
+
+  "images/test_5.jpg": {
+    "name": "images/test_of_5.jpg",
+    "ball_min_area": 75,
+    "ball_min_coverage": 0.40,
+    "ball_hsv_min": [20, 145, 20],
+    "img_resize": [1280, 720]
+  }
+}
