@@ -2,6 +2,8 @@ import cv2
 import numpy
 import numpy as np
 
+# Suggestion: draw ellipses instead of circles and check the dimensions of it (and percentage filled)
+
 all_contours = False
 use_hsv = True
 
@@ -10,10 +12,10 @@ img = cv2.imread("images/test_1.jpg")
 # No grayscale cause using color masks
 
 if use_hsv:
+
     img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
     mask = cv2.inRange(img, (20, 100, 20), (40, 255, 255))
 else:
-    # TODO: improve ranges to accommodate tests 3 & 4 (seems like upper limit needs increasing) (maybe hsv)
     lit_ball_mask = cv2.inRange(img, (1, 110, 110), (70, 220, 240))
     shadowed_ball_mask = cv2.inRange(img, (0, 50, 50), (25, 130, 130))
     mask = lit_ball_mask + shadowed_ball_mask
