@@ -9,7 +9,7 @@ def nothing(x):
     pass
 
 # Load image
-image = cv2.imread('ball_detector/images/test_of_5.JPG')
+image = cv2.imread('assignment1/images/pedestrian-sign.jpg')
 image = cv2.resize(image, (1400, 500))
 
 # Create a window
