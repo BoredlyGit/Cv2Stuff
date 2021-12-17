@@ -13,7 +13,7 @@ for img_path in os.listdir("images/"):
     img = cv2.GaussianBlur(og_img, (3, 3), 0)
     img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     img = cv2.Canny(img, 187, 255)
-    img = cv2.morphologyEx(img, cv2.MORPH_CLOSE, np.ones((1, 1)))
+    # img = cv2.morphologyEx(img, cv2.MORPH_CLOSE, np.ones((1, 1)))
     cv2.imshow("canny", img)
 
     contours, _ = cv2.findContours(img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
