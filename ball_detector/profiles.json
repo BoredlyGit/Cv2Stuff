@@ -18,6 +18,11 @@
     "img_resize": null
   },
 
+  "images/test_1.jpg": {
+    "name": "images/test_1.jpg",
+    "ball_min_coverage": 0.6
+  },
+
   "images/test_5.jpg": {
     "name": "images/test_5.jpg",
     "ball_min_area": 75,
