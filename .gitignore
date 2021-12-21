@@ -3,6 +3,7 @@ venv/
 .idea/
 __pycache__/
 notes.md
+readme_master.md
 
 # lots of images here & not really used. Waste of processing, storage, & time for git rn.
 pytorch_stuff/
