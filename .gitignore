@@ -3,5 +3,6 @@ venv/
 .idea/
 __pycache__/
 notes.md
+
 */.ipynb_checkpoints
 pytorch_stuff/data
