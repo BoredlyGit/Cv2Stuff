@@ -3,6 +3,5 @@ venv/
 .idea/
 __pycache__/
 notes.md
-
-# lots of images here & not really used. Waste of processing, storage, & time for git rn.
-pytorch_stuff/
+*/.ipynb_checkpoints
+pytorch_stuff/data
