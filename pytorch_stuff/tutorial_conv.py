@@ -1,5 +1,6 @@
 # Uses the last 4 videos (5-8) of https://www.youtube.com/playlist?list=PLQVvvaa0QuDdeMyHEYc0gxFpYwHY2Qfdh
 # Read notes/nn_notes.md
+# Contents are the same as matching ipynb file, I just don't wanna retrain the model every time I change stuff
 
 import os
 import cv2
@@ -12,8 +13,9 @@ from torch import nn, Tensor
 from torch.nn import functional as nn_func
 from torch import optim
 
-
 REBUILD_DATA = False  # Don't want to rerun data preprocessing each time program runs
+
+print("starting!")
 
 
 class DogsAndCatsData:
@@ -61,23 +63,23 @@ class Network(nn.Module):
         """
         Convolutional layers output differently from linear ones, outputting a tensor of n*n*out_channels.
         Thus, they need to be flattened. However, this varies based on input size, so just shove in a 50x50 of zeros,
-        get the output shape, flatten, and use that. # This feels really hacky - theres probably a better way. Maybe 
-        LazyLinear?
+        get the output shape, flatten, and use that.
         - In this case, the output size (from a 50*50 input) is 512 (2*2*128)
-        
+
         - This reshapes into a 4d array because the input format is:
          [
             [
                 [[data], 
                 [data]],
-                 
+
                 [[data_2],
                  [data_2]], 
             ], 
             [label, label_2]
         ]
         """
-        self.conv_output_flattened_size = self.run_conv_layers(torch.zeros(50, 50).view(-1, 1, 50, 50)).flatten().size()[0]
+        self.conv_output_flattened_size = \
+        self.run_conv_layers(torch.zeros(50, 50).view(-1, 1, 50, 50)).flatten().size()[0]
         self.zero_grad()
 
         self.fc1 = nn.Linear(self.conv_output_flattened_size, 512)
@@ -106,27 +108,30 @@ if REBUILD_DATA:
 train_data = np.load("training_data.npy", allow_pickle=True)
 
 images = Tensor(np.array([example[0] for example in train_data])).view(-1, 50, 50)
+images = images / 255  # make grayscale values a percentage of 255 so that 0 < x < 1
 labels = Tensor(np.array([example[1] for example in train_data]))
 
 TEST_PERCENT = 0.10  # Use 10% of the data as tests
 
-train_images = images[:-int((len(images)*TEST_PERCENT))]
-train_labels = labels[:-int((len(images)*TEST_PERCENT))]
-test_images = images[-int((len(images)*TEST_PERCENT)):]
-test_labels = labels[-int((len(images)*TEST_PERCENT)):]
+train_images = images[:-int((len(images) * TEST_PERCENT))]
+train_labels = labels[:-int((len(images) * TEST_PERCENT))]
+test_images = images[-int((len(images) * TEST_PERCENT)):]
+test_labels = labels[-int((len(images) * TEST_PERCENT)):]
 
 network = Network()
 optimizer = optim.Adam(network.parameters(), lr=0.001)
 
-EPOCHS = 1
+EPOCHS = 3
 BATCH_SIZE = 100
 
+# Training:
+network.train()
 for epoch in range(EPOCHS):
     # I have no idea why the tutorial didn't use Dataset and DataLoader but whatever
     total_loss = []
     for index in tqdm(range(0, len(train_data), BATCH_SIZE)):
-        batch_images = train_images[index:index+BATCH_SIZE].view(-1, 1, 50, 50)
-        batch_labels = train_labels[index:index+BATCH_SIZE]
+        batch_images = train_images[index:index + BATCH_SIZE].view(-1, 1, 50, 50)
+        batch_labels = train_labels[index:index + BATCH_SIZE]
 
         # optimizer.zero_grad() does the same thing IF optimizer was given all parameters (network.parameters())
         network.zero_grad()
@@ -135,9 +140,22 @@ for epoch in range(EPOCHS):
         loss.backward()
         total_loss.append(loss.item())
         optimizer.step()
-    print(f"epoch {epoch}, average loss: {sum(total_loss)/len(total_loss)}")
-
+    print(f"epoch {epoch}, average loss: {sum(total_loss) / len(total_loss)}")
 
 # print(Network().run_conv_layers(torch.zeros(50, 50).view(-1, 1, 50, 50)).flatten().shape)
-batch_X = train_data[i:i + BATCH_SIZE].view(-1, 1, 50, 50)
-Tensor().view
+
+# Testing
+correct = 0
+total = 0
+
+with torch.no_grad():
+    network.eval()
+    for index in tqdm(range(len(test_images))):
+        answer = torch.argmax(test_labels[index])  # argmax returns the INDEX of largest element
+        prediction = torch.argmax(network(test_images[index].view(-1, 1, 50, 50)))
+        #         print(test_labels[index], network(test_images[index].view(-1, 1, 50, 50)))
+        if answer == prediction:
+            correct += 1
+        total += 1
+
+print(f"Correct: {correct}, total: {total} | {(correct / total) * 100}%")
