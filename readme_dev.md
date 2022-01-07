@@ -1,0 +1,1 @@
+# Decent chance none of this stuff works - basically only used to sync w/ my laptop - go look at master.
