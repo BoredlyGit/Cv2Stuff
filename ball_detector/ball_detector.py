@@ -4,9 +4,10 @@ import numpy as np
 import json
 import pprint
 
-# TODO: record and return data
-# TODO: try to detect blobs of balls somehow?
+# TODO: In HSV, red h value wraps around from 179 to 0 - how to deal with?? cvt to rgb? do multiple inRange() passes?
 # Suggestion: use ellipses instead and check ratio?
+# Suggestion: record and return data in json
+# Suggestion: try to detect blobs of balls somehow?
 
 
 def detect_balls(img, profile, all_contours=False):
@@ -26,6 +27,7 @@ def detect_balls(img, profile, all_contours=False):
     ball_edges.dtype = np.dtype("uint8")
     ball_edges = ball_edges * 255
     mask = mask - ball_edges
+    cv2.imshow("mask", mask)
 
     contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
@@ -40,10 +42,10 @@ def detect_balls(img, profile, all_contours=False):
 
 
 def main():
-    img_path = "images/test_1.jpg"
+    img_path = "images/blue_ball.PNG"
     img_path = img_path.lower()
-    use_video = False
-    camera_name = ""
+    use_video = True
+    video_profile = "images/red_ball.PNG"
     rotate_video = 0
 
     with open("profiles.json") as img_profiles:
@@ -52,7 +54,7 @@ def main():
 
     if use_video:
         cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
-        img_profile.update(img_profiles.get(camera_name, {}))
+        img_profile.update(img_profiles.get(video_profile.lower(), {}))
         print(f"Using profile: {img_profile['name']}\n{pprint.pformat(img_profile)}")
 
         while True:
@@ -67,7 +69,7 @@ def main():
                 center = (w//2, h//2)
                 og_img = cv2.warpAffine(og_img, cv2.getRotationMatrix2D(center, rotate_video, 1), (w, h))
 
-            circles, contours = detect_balls(og_img.copy(), img_profile)
+            circles, contours = detect_balls(og_img.copy(), img_profile, all_contours=False)
             cv2.drawContours(og_img, contours, -1, (255, 255, 255), 2)
             for circle in circles:
                 cv2.circle(og_img, (int(circle[0][0]), int(circle[0][1])), int(circle[1]), (255, 0, 0), 2)
