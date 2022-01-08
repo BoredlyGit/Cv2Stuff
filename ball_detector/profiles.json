@@ -6,16 +6,28 @@
     "ball_hsv_max": "Maximum HSV values (inRange)",
     "img_resize": "Dimensions to resize the image to (can be null to keep original size)",
 
-    "notes": "If a profile is missing any values, they will be filled in from default,"
+    "notes": "If a profile is missing any values, they will be filled in from default, Keys should be all lowercase"
   },
 
   "default":  {
     "name": "default",
     "ball_min_area": 500,
-    "ball_min_coverage": 0.75,
-    "ball_hsv_min": [20, 90, 20],
-    "ball_hsv_max": [30, 255, 255],
+    "ball_min_coverage": 0.65,
+    "ball_hsv_min": [0, 0, 187],
+    "ball_hsv_max": [40, 255, 255],
     "img_resize": null
+  },
+
+  "images/red_ball.png": {
+    "name": "red_ball",
+    "ball_hsv_min": [100, 67, 0],
+    "ball_hsv_max": [179, 255, 255]
+  },
+
+  "images/blue_ball.png": {
+    "name": "red_ball",
+    "ball_hsv_min": [96, 104, 0],
+    "ball_hsv_max": [179, 255, 255]
   },
 
   "images/test_1.jpg": {
