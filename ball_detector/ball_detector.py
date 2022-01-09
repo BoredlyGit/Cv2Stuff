@@ -4,8 +4,6 @@ import numpy as np
 import json
 import pprint
 
-# TODO: In HSV, red h value wraps around from 179 to 0 - how to deal with?? cvt to rgb? do multiple inRange() passes?
-# Suggestion: use ellipses instead and check ratio?
 # Suggestion: record and return data in json
 # Suggestion: try to detect blobs of balls somehow?
 
@@ -18,16 +16,20 @@ def detect_balls(img, profile, all_contours=False):
     # No grayscale cause using color masks
 
     img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-    # doesnt accept tuples for some reason.
-    mask = cv2.inRange(img, np.array(profile["ball_hsv_min"]), np.array(profile["ball_hsv_max"]))
+    # doesn't accept tuples for some reason.
+    mask = np.zeros(img.shape[:2], dtype="uint8")
+    print(mask.shape)
+    for i, hsv_range in enumerate(profile["hsv_ranges"]):
+        mask = np.bitwise_or(mask, cv2.inRange(img, np.array(hsv_range["min"]), np.array(hsv_range["max"])))
+        cv2.imshow(f"mask{i}", mask)
 
-    # try to detect edges of overlapping balls with Canny - it finds edges which can be subtracted from the mask
-    ball_edges = cv2.GaussianBlur(cv2.Canny(img, 0, 250), (3, 3), 0)
-    ball_edges = numpy.logical_and(mask, ball_edges)
-    ball_edges.dtype = np.dtype("uint8")
-    ball_edges = ball_edges * 255
+    # try to detect edges of overlapping balls - find edges which can be subtracted from the mask to create separations
+    _, ball_edges = cv2.threshold((cv2.GaussianBlur(cv2.Canny(img, 0, 250), (3, 3), 0)), 10, 255, cv2.THRESH_BINARY)
+    print(ball_edges)
+    cv2.imshow("edges", ball_edges)
+    ball_edges = numpy.bitwise_and(mask, ball_edges)
     mask = mask - ball_edges
-    cv2.imshow("mask", mask)
+    cv2.imshow("final mask", mask)
 
     contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
@@ -42,9 +44,9 @@ def detect_balls(img, profile, all_contours=False):
 
 
 def main():
-    img_path = "images/blue_ball.PNG"
+    img_path = "images/test_1.jpg"
     img_path = img_path.lower()
-    use_video = True
+    use_video = False
     video_profile = "images/red_ball.PNG"
     rotate_video = 0
 

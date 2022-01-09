@@ -2,32 +2,20 @@
   "_explanations":  {
     "ball_min_area": "Minimum area of a ball (px?).",
     "ball_min_coverage": "minimum percentage (as decimal) of its minEnclosingCircle a ball must cover.",
-    "ball_hsv_min": "Minimum HSV values (inRange)",
-    "ball_hsv_max": "Maximum HSV values (inRange)",
+    "hsv_ranges": "Array of dicts of {min: [], max: []}, one for each hsv range to be applied. Ranges will be taken from original image and compiled into one mask. THESE WILL VARY BETWEEN CAMERAS when used with video.",
     "img_resize": "Dimensions to resize the image to (can be null to keep original size)",
 
-    "notes": "If a profile is missing any values, they will be filled in from default, Keys should be all lowercase"
+    "notes": "If a profile is missing any values, they will be filled in from default | Top level keys should be all lowercase"
   },
 
   "default":  {
     "name": "default",
     "ball_min_area": 500,
     "ball_min_coverage": 0.65,
-    "ball_hsv_min": [0, 0, 187],
-    "ball_hsv_max": [40, 255, 255],
+    "hsv_ranges": [
+      {"min": [20, 90, 20], "max": [30, 255, 255]}
+    ],
     "img_resize": null
-  },
-
-  "images/red_ball.png": {
-    "name": "red_ball",
-    "ball_hsv_min": [100, 67, 0],
-    "ball_hsv_max": [179, 255, 255]
-  },
-
-  "images/blue_ball.png": {
-    "name": "red_ball",
-    "ball_hsv_min": [96, 104, 0],
-    "ball_hsv_max": [179, 255, 255]
   },
 
   "images/test_1.jpg": {
@@ -39,7 +27,24 @@
     "name": "images/test_5.jpg",
     "ball_min_area": 75,
     "ball_min_coverage": 0.40,
-    "ball_hsv_min": [20, 145, 20],
+    "hsv_ranges": [
+      {"min": [20, 145, 20], "max": [30, 255, 255]}
+    ],
     "img_resize": [1280, 720]
+  },
+
+  "images/red_ball.png": {
+    "name": "red_ball",
+    "hsv_ranges": [
+      {"min": [0, 151, 0], "max": [179, 255, 255]}
+    ]
+  },
+
+  "images/blue_ball.png": {
+    "name": "blue_ball",
+    "hsv_ranges": [
+      {"min": [96, 104, 0], "max": [179, 255, 255]}
+    ]
   }
+
 }
