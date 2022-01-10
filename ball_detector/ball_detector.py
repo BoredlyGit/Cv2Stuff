@@ -5,9 +5,8 @@ import json
 import pprint
 import json
 import utils
-
-# Suggestion: record and return data in json
 # Suggestion: try to detect blobs of balls somehow?
+# todo: better red detection - maybe invert and look for cyan??
 
 
 def detect_balls(img, profile, all_contours=False):
@@ -64,9 +63,9 @@ def main():
 
     font_kwargs = {"fontFace": cv2.FONT_HERSHEY_DUPLEX, "fontScale": 0.5}
     use_video = True
-    video_profile = "images/blue_ball.PNG"
+    video_profile = "all_balls"
     rotate_video = 0
-    cam_focal_length = 655  # my laptop camera's
+    cam_focal_length = 655  # my laptop camera's - see utils.get_focal_length()
 
     with open("profiles.json") as img_profiles:
         img_profiles = json.load(img_profiles)
@@ -100,9 +99,10 @@ def main():
                 b_rect_x, b_rect_y, b_rect_w, b_rect_h = cv2.boundingRect(contour)
 
                 text = f"""pos: {circles_data[i]['position']} | distance: {round(circles_data[i]['distance'], 2)} | radius: {circles_data[i]['radius']}"""
-                cv2.circle(og_img, circle_center, circle_radius, (255, 0, 0), 2)
-                cv2.rectangle(og_img, (b_rect_x, b_rect_y), (b_rect_x+b_rect_w, b_rect_y+b_rect_h), (255, 255, 255))
+                cv2.circle(og_img, circle_center, circle_radius, (0, 255, 0), 2)
+                # cv2.rectangle(og_img, (b_rect_x, b_rect_y), (b_rect_x+b_rect_w, b_rect_y+b_rect_h), (255, 255, 255))
                 utils.draw_text_box(og_img, text, circle_center, font_kwargs)
+                cv2.line(og_img, (og_img.shape[0]//2, og_img.shape[1]), circle_center, (0, 255, 0), thickness=2)
 
                 # focal_len = utils.get_focal_length(100, circle_width_irl, b_rect_w)
 
