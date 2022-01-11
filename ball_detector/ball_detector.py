@@ -5,6 +5,7 @@ import json
 import pprint
 import json
 import utils
+import gui_elements
 # Suggestion: try to detect blobs of balls somehow?
 # TODO: Other bot detection could possibly be done by detecting the bumpers - some combination of text, color, and shape
 # todo: better red detection - maybe invert and look for cyan??
@@ -12,6 +13,7 @@ import utils
 
 def detect_balls(img, profile, all_contours=False):
     if profile["img_resize"]:
+        print(profile)
         img = cv2.resize(img, profile["img_resize"])
 
     img = cv2.GaussianBlur(img, (3, 3), 0)
@@ -40,8 +42,7 @@ def detect_balls(img, profile, all_contours=False):
         # check size and shape, (see variables above)
         contours = [contour for contour in contours
                     if cv2.contourArea(contour) > profile["ball_min_area"]
-                    and (3.14 * cv2.minEnclosingCircle(contour)[1] ** 2 - cv2.contourArea(contour)
-                         < (3.14 * cv2.minEnclosingCircle(contour)[1] ** 2) * (1 - profile["ball_min_coverage"]))]
+                    and (cv2.contourArea(contour)/(3.14 * cv2.minEnclosingCircle(contour)[1] ** 2)) > profile["ball_min_coverage"]]
 
     return list(map(cv2.minEnclosingCircle, contours)), contours
 
@@ -52,17 +53,21 @@ def circles_to_json(circles, frame_dimensions, cam_focal_len):
         pos_x, pos_y = int(circle[0][0]), int(circle[0][1])
         pos_x = pos_x - frame_dimensions[0]/2
         pos_y = frame_dimensions[1]/2 - pos_y
+        diameter = int(circle[1])*2
+        diameter = 1 if diameter == 0 else diameter  # prevent ZeroDivisions
         ret.append({"position": (pos_x, pos_y),
                     "radius": int(circle[1]),
-                    "distance": utils.distance_to_object(cam_focal_len, 24, int(circle[1])*2)})
+                    "distance": utils.distance_to_object(cam_focal_len, 24, diameter)})
     return json.dumps(ret)
 
 
 def main():
+    use_gui = True
+    font_kwargs = {"fontFace": cv2.FONT_HERSHEY_DUPLEX, "fontScale": 0.5}
+
     img_path = "images/blue_ball.PNG"
     img_path = img_path.lower()
 
-    font_kwargs = {"fontFace": cv2.FONT_HERSHEY_DUPLEX, "fontScale": 0.5}
     use_video = True
     video_profile = "all_balls"
     rotate_video = 0
@@ -76,8 +81,17 @@ def main():
         cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
         img_profile.update(img_profiles.get(video_profile.lower(), {}))
         print(f"Using profile: {img_profile['name']}\n{pprint.pformat(img_profile)}")
+    else:
+        og_img = cv2.imread(img_path)
+        img_profile.update(img_profiles.get(img_path, {}))
 
-        while True:
+    if use_gui:
+        gui = gui_elements.OptionsFrame()
+        gui.pack()
+        img_profile = gui.options
+
+    while True:
+        if use_video:
             frame_ready = False
             og_img = None
             while not frame_ready:
@@ -88,39 +102,11 @@ def main():
                 center = (w//2, h//2)
                 og_img = cv2.warpAffine(og_img, cv2.getRotationMatrix2D(center, rotate_video, 1), (w, h))
 
-            circles, contours = detect_balls(og_img.copy(), img_profile, all_contours=False)
-            cv2.drawContours(og_img, contours, -1, (255, 255, 255), 2)
-            circles_data = json.loads(circles_to_json(circles, (cap.get(cv2.CAP_PROP_FRAME_WIDTH),
-                                                                cap.get(cv2.CAP_PROP_FRAME_HEIGHT)), cam_focal_length))
+        circles, contours = detect_balls(og_img.copy(), img_profile, all_contours=False)
 
-            for i, circle in enumerate(circles):
-                circle_center = (int(circle[0][0]), int(circle[0][1]))
-                circle_radius = int(circle[1])
-                contour = contours[i]
-                b_rect_x, b_rect_y, b_rect_w, b_rect_h = cv2.boundingRect(contour)
-
-                text = f"""pos: {circles_data[i]['position']} | distance: {round(circles_data[i]['distance'], 2)} | radius: {circles_data[i]['radius']}"""
-                cv2.circle(og_img, circle_center, circle_radius, (0, 255, 0), 2)
-                # cv2.rectangle(og_img, (b_rect_x, b_rect_y), (b_rect_x+b_rect_w, b_rect_y+b_rect_h), (255, 255, 255))
-                utils.draw_text_box(og_img, text, circle_center, font_kwargs)
-                cv2.line(og_img, (og_img.shape[0]//2, og_img.shape[1]), circle_center, (0, 255, 0), thickness=2)
-
-                # focal_len = utils.get_focal_length(100, circle_width_irl, b_rect_w)
-
-            cv2.imshow("processed", og_img)
-            key = cv2.waitKey(1)
-            if key in (27, 113):  # 27 = esc, 113 = q
-                print(key)
-                break
-    else:
-        og_img = cv2.imread(img_path)
-        img_profile.update(img_profiles.get(img_path, {}))
-
-        print(f"Using profile: {img_profile['name']}\n{pprint.pformat(img_profile)}")
-
-        circles, contours = detect_balls(og_img.copy(), img_profile)
-        cv2.drawContours(og_img, contours, -1, (255, 255, 255), 2)
-        circles_data = json.loads(circles_to_json(circles, og_img.shape[:2], cam_focal_length))
+        processed_img = og_img.copy()
+        cv2.drawContours(processed_img, contours, -1, (255, 255, 255), 2)
+        circles_data = json.loads(circles_to_json(circles, processed_img.shape[:2], cam_focal_length))
 
         for i, circle in enumerate(circles):
             circle_center = (int(circle[0][0]), int(circle[0][1]))
@@ -128,13 +114,26 @@ def main():
             contour = contours[i]
             b_rect_x, b_rect_y, b_rect_w, b_rect_h = cv2.boundingRect(contour)
 
-            text = f"pos: {circles_data[i]['position']} | radius: {circles_data[i]['radius']}"
-            cv2.circle(og_img, circle_center, circle_radius, (255, 0, 0), 2)
-            cv2.rectangle(og_img, (b_rect_x, b_rect_y), (b_rect_x + b_rect_w, b_rect_y + b_rect_h), (255, 255, 255))
-            utils.draw_text_box(og_img, text, circle_center, font_kwargs)
+            text = f"""pos: {circles_data[i]['position']} | distance: {round(circles_data[i]['distance'], 2)} | radius: {circles_data[i]['radius']}"""
+            cv2.circle(processed_img, circle_center, circle_radius, (0, 255, 0), 2)
+            # cv2.rectangle(processed_img, (b_rect_x, b_rect_y), (b_rect_x+b_rect_w, b_rect_y+b_rect_h), (255, 255, 255))
+            utils.draw_text_box(processed_img, text, circle_center, font_kwargs)
+            cv2.line(processed_img, (processed_img.shape[0]//2, processed_img.shape[1]), circle_center, (0, 255, 0), thickness=2)
 
-        cv2.imshow("processed", og_img)
-        cv2.waitKey(0)
+            # focal_len = utils.get_focal_length(100, circle_width_irl, b_rect_w)
+
+        cv2.imshow("processed", processed_img)
+
+        if use_gui:
+            gui.update()
+            img_profile = gui.options
+            print(img_profile)
+
+        key = cv2.waitKey(1)
+        if key in (27, 113):  # 27 = esc, 113 = q
+            print(key)
+            break
+
 
 
 if __name__ == "__main__":
