@@ -1,7 +1,7 @@
 import cv2
 import numpy
 import numpy as np
-import json
+import tkinter
 import pprint
 import json
 import utils
@@ -12,10 +12,6 @@ import gui_elements
 
 
 def detect_balls(img, profile, all_contours=False):
-    if profile["img_resize"]:
-        print(profile)
-        img = cv2.resize(img, profile["img_resize"])
-
     img = cv2.GaussianBlur(img, (3, 3), 0)
     # No grayscale cause using color masks
 
@@ -63,32 +59,31 @@ def circles_to_json(circles, frame_dimensions, cam_focal_len):
 
 def main():
     use_gui = True
+    profile_name = "all_balls"
     font_kwargs = {"fontFace": cv2.FONT_HERSHEY_DUPLEX, "fontScale": 0.5}
 
     img_path = "images/blue_ball.PNG"
     img_path = img_path.lower()
 
-    use_video = True
-    video_profile = "all_balls"
+    use_video = False
     rotate_video = 0
     cam_focal_length = 655  # my laptop camera's - see utils.get_focal_length()
 
-    with open("profiles.json") as img_profiles:
-        img_profiles = json.load(img_profiles)
-    img_profile = img_profiles["default"]
+    with open("profiles.json") as profiles:
+        profiles = json.load(profiles)
+    profile = profiles["default"]
+    profile.update(profiles.get(profile_name.lower(), {}))
+    print(f"Using profile: {profile['name']}\n{pprint.pformat(profile)}")
 
     if use_video:
         cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
-        img_profile.update(img_profiles.get(video_profile.lower(), {}))
-        print(f"Using profile: {img_profile['name']}\n{pprint.pformat(img_profile)}")
     else:
         og_img = cv2.imread(img_path)
-        img_profile.update(img_profiles.get(img_path, {}))
 
     if use_gui:
-        gui = gui_elements.OptionsFrame()
+        gui = gui_elements.OptionsFrame(init_options=profile)
         gui.pack()
-        img_profile = gui.options
+        profile = gui.options
 
     while True:
         if use_video:
@@ -102,7 +97,13 @@ def main():
                 center = (w//2, h//2)
                 og_img = cv2.warpAffine(og_img, cv2.getRotationMatrix2D(center, rotate_video, 1), (w, h))
 
-        circles, contours = detect_balls(og_img.copy(), img_profile, all_contours=False)
+        if profile["img_resize"] is not None:
+            try:
+                og_img = cv2.resize(og_img, profile["img_resize"])
+            except cv2.error:
+                print(f"RESIZE TO {profile['img_resize']} FAILED, tri dimensions more similar to each other")
+
+        circles, contours = detect_balls(og_img.copy(), profile, all_contours=False)
 
         processed_img = og_img.copy()
         cv2.drawContours(processed_img, contours, -1, (255, 255, 255), 2)
@@ -111,8 +112,8 @@ def main():
         for i, circle in enumerate(circles):
             circle_center = (int(circle[0][0]), int(circle[0][1]))
             circle_radius = int(circle[1])
-            contour = contours[i]
-            b_rect_x, b_rect_y, b_rect_w, b_rect_h = cv2.boundingRect(contour)
+            # contour = contours[i]
+            # b_rect_x, b_rect_y, b_rect_w, b_rect_h = cv2.boundingRect(contour)
 
             text = f"""pos: {circles_data[i]['position']} | distance: {round(circles_data[i]['distance'], 2)} | radius: {circles_data[i]['radius']}"""
             cv2.circle(processed_img, circle_center, circle_radius, (0, 255, 0), 2)
@@ -120,20 +121,21 @@ def main():
             utils.draw_text_box(processed_img, text, circle_center, font_kwargs)
             cv2.line(processed_img, (processed_img.shape[0]//2, processed_img.shape[1]), circle_center, (0, 255, 0), thickness=2)
 
-            # focal_len = utils.get_focal_length(100, circle_width_irl, b_rect_w)
-
         cv2.imshow("processed", processed_img)
 
         if use_gui:
             gui.update()
-            img_profile = gui.options
-            print(img_profile)
+            try:
+                if gui.options != profile:
+                    profile = gui.options
+                    print(profile)
+            except tkinter.TclError:
+                exit(-1)
 
         key = cv2.waitKey(1)
         if key in (27, 113):  # 27 = esc, 113 = q
             print(key)
             break
-
 
 
 if __name__ == "__main__":
