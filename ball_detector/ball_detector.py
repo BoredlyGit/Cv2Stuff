@@ -101,7 +101,7 @@ def main():
             try:
                 og_img = cv2.resize(og_img, profile["img_resize"])
             except cv2.error:
-                print(f"RESIZE TO {profile['img_resize']} FAILED, tri dimensions more similar to each other")
+                print(f"RESIZE TO {profile['img_resize']} FAILED, try dimensions more similar to each other")
 
         circles, contours = detect_balls(og_img.copy(), profile, all_contours=False)
 
@@ -132,10 +132,13 @@ def main():
             except tkinter.TclError:
                 exit(-1)
 
-        key = cv2.waitKey(1)
-        if key in (27, 113):  # 27 = esc, 113 = q
-            print(key)
-            break
+        try:
+            key = cv2.waitKey(1)
+            if key in (27, 113):  # 27 = esc, 113 = q
+                print(key)
+                break
+        except KeyboardInterrupt:
+            exit(-1)
 
 
 if __name__ == "__main__":

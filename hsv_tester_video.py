@@ -36,6 +36,7 @@ phMin = psMin = pvMin = phMax = psMax = pvMax = 0
 cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
 while(1):
     _, image = cap.read()
+    image = cv2.resize(image, (750, 500))
 
     # Get current positions of all trackbars
     hMin = cv2.getTrackbarPos('HMin', 'image')
