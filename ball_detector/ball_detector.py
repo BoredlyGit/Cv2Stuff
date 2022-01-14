@@ -65,7 +65,7 @@ def main():
     img_path = "images/blue_ball.PNG"
     img_path = img_path.lower()
 
-    use_video = False
+    use_video = True
     rotate_video = 0
     cam_focal_length = 655  # my laptop camera's - see utils.get_focal_length()
 
