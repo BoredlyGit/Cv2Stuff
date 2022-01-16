@@ -1,11 +1,13 @@
 from tornado import web, websocket, ioloop
 
+
 class HelloWorldHandler(websocket.WebSocketHandler):
-    def on_open(self):
+    def open(self):
         print("opened")
 
     def on_message(self, message):
-        self.write_message(u"Hello, World!")
+        print(message, type(message))
+        self.write_message("Hello, World!")
 
     def on_close(self):
         print("closed")

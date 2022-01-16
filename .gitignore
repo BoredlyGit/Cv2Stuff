@@ -1,9 +1,10 @@
+# Not My stuff
 2020Vision/
+1050-105_(2021Vision)_TFLite/
+
 venv/
 .idea/
 __pycache__/
-2021Vision(1050-105)_ML/
 notes.md
-
 */.ipynb_checkpoints
 pytorch_stuff/data
