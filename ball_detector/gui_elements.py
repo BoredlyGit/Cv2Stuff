@@ -59,7 +59,7 @@ class OptionsFrame(tk.Frame):
             self.prev_options = {'ball_min_area': 500, 'ball_min_coverage': 0.60, 'img_resize': None, 'subtract_canny': 0, 'hsv_ranges': [{'min': [0, 0, 0], 'max': [255, 255, 255]}], 'name': 'GUI'}
         else:
             self.prev_options = init_options
-        self.option_names = ["ball_min_area", "ball_min_coverage", "img_resize", "subtract_canny"]
+        self.option_names = ["ball_min_area", "ball_min_coverage", "img_resize", "subtract_canny", "use_metric"]
         self.hsv_mask_selectors = []
 
         self.ball_area_options = tk.Frame(master=self, relief="solid", borderwidth=1)
@@ -77,6 +77,9 @@ class OptionsFrame(tk.Frame):
         self.img_resize.pack()
         self.subtract_canny = InputField(tk.Checkbutton(variable=tk.BooleanVar()), "subtract_canny: ", master=self.other_options)
         self.subtract_canny.pack()
+
+        self.use_metric = InputField(tk.Checkbutton(variable=tk.BooleanVar()), "use metric: ", master=self.other_options)
+        self.use_metric.pack()
 
         self.HSV_frame = tk.Frame(relief="solid", borderwidth=1)
         self.add_range_button = tk.Button(self.HSV_frame, text="Add HSV range", command=self.add_hsv_range)
@@ -103,6 +106,7 @@ class OptionsFrame(tk.Frame):
             ret["ball_min_coverage"] = float(ret["ball_min_coverage"])
             ret["img_resize"] = list(int(dim) for dim in ret["img_resize"])
             ret["subtract_canny"] = int(ret["subtract_canny"])
+            ret["use_metric"] = int(ret["use_metric"])
         except ValueError:
             print("valerr")
             return self.prev_options

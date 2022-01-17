@@ -12,12 +12,13 @@
   "default":  {
     "name": "default",
     "ball_min_area": 500,
-    "ball_min_coverage": 0.7,
+    "ball_min_coverage": 0.85,
     "hsv_ranges": [
       {"min": [20, 90, 20], "max": [30, 255, 255]}
     ],
     "img_resize": null,
-    "subtract_canny": 1
+    "subtract_canny": 1,
+    "use_metric": false
   },
 
   "images/test_1.jpg": {
