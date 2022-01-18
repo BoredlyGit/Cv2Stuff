@@ -1,0 +1,22 @@
+{
+  "Note": "Stores settings for video processors. Ideally messages can be sent to the control websocket and settings changed. This should only be used to initialize and persist settings - read once at start and keep in-memory copy. Only write when changes have been made to in-memory copy",
+
+  "ball_detector": {
+    "name": "both_balls",
+    "ball_min_area": 500,
+    "ball_min_coverage": 0.85,
+    "hsv_ranges": [
+      {"min": [96, 104, 0], "max": [135, 255, 255], "name":  "blue"},
+      {"min": [0, 76, 50], "max": [10, 255, 255], "name":  "red1"},
+      {"min": [170, 80, 100], "max": [180, 255, 255], "name":  "red2"},
+      {"min": [20, 90, 20], "max": [30, 255, 255], "name":  "yellow"}
+    ],
+    "img_resize": null,
+    "subtract_canny": 1,
+    "use_metric": false
+  },
+
+  "global": {
+
+  }
+}

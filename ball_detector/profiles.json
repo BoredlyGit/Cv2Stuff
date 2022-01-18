@@ -60,7 +60,7 @@
       {"min": [170, 80, 100], "max": [180, 255, 255], "name":  "red2"},
       {"min": [20, 90, 20], "max": [30, 255, 255], "name":  "yellow"}
     ],
-  "subtract_canny": 0
+    "subtract_canny": 0
   }
 
 }

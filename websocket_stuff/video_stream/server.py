@@ -1,4 +1,5 @@
-from tornado import web, websocket, ioloop
+import tornado
+from tornado import web, websocket, ioloop, iostream
 import cv2
 from base64 import b64encode
 import asyncio
@@ -13,19 +14,35 @@ class RawVideoHandler(websocket.WebSocketHandler):
         print("opened")
 
     def on_message(self, message):
-        print(message, type(message))
+        self.send_frame(self.cap.read()[1])
+
+    def send_frame(self, frame):
         # jpg does lossy compression,payload size is too large without
-        jpg_frame = cv2.imencode(".jpg", self.cap.read()[1])[1]
-        self.write_message(b64encode(jpg_frame))
+        jpg_frame = cv2.imencode(".jpg", frame)[1]
+        try:
+            self.write_message(b64encode(jpg_frame))
+        except tornado.iostream.StreamClosedError:
+            pass
 
     def on_close(self):
         print("closed")
 
 
+class ProcessedVideoHandler(RawVideoHandler):
+    def on_message(self, message):
+        if message == "frame":
+            frame = self.cap.read()[1]
+            frame = # TODO: Process
+            self.send_frame(frame)
+        elif message == "get_config":
+            pass
+
+
 def main():
     cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
     app = web.Application([
-        ("/", RawVideoHandler, {"cap": cap}),
+        ("/raw/", RawVideoHandler, {"cap": cap}),
+        ("/processed/", ProcessedVideoHandler, {"cap": cap}),
     ])
     app.listen(8868)
     ioloop.IOLoop.current().start()  # creates or gets IOLoop belonging to thread. IOLoop should work with asyncio.

@@ -8,7 +8,7 @@ from io import BytesIO
 
 
 async def main():
-    async with websockets.connect("ws://localhost:8868/") as ws:
+    async with websockets.connect("ws://localhost:8868/raw/") as ws:
         while True:
             print("f")
             await ws.send("frame")
