@@ -29,11 +29,23 @@ class RawVideoHandler(websocket.WebSocketHandler):
 
 
 class ProcessedVideoHandler(RawVideoHandler):
+    def initialize(self, cap):
+        super().initialize(cap)
+        self.enabled_processors = []
+
     def on_message(self, message):
+        # TODO: how separate data??
         if message == "frame":
-            frame = self.cap.read()[1]
-            frame = # TODO: Process
-            self.send_frame(frame)
+            raw = self.cap.read()[1]
+            to_draw = []
+            data = {}
+            for processor in self.enabled_processors:
+                result = processor.run(raw)
+                to_draw.append(result[0])
+                data[processor.name] = result[1]
+            for item in to_draw:
+                processed = # TODO: Process
+            self.send_frame(processed)
         elif message == "get_config":
             pass
 

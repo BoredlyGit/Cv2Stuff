@@ -43,7 +43,7 @@ def detect_balls(img, profile, all_contours=False):
     return list(map(cv2.minEnclosingCircle, contours)), contours
 
 
-def circles_to_json(circles, frame_dimensions, cam_focal_len, use_metric=False):
+def circles_to_data(circles, frame_dimensions, cam_focal_len, use_metric=False, to_json=False):
     ret = []
     for circle in circles:
         pos_x, pos_y = int(circle[0][0]), int(circle[0][1])
@@ -54,7 +54,7 @@ def circles_to_json(circles, frame_dimensions, cam_focal_len, use_metric=False):
         ret.append({"position": (pos_x, pos_y),
                     "radius": int(circle[1]),
                     "distance": utils.distance_to_object(cam_focal_len, 24, diameter) if use_metric else (utils.distance_to_object(cam_focal_len, 24, diameter)/30.48)})
-    return json.dumps(ret)
+    return json.dumps(ret) if to_json else ret
 
 
 def main():
@@ -107,7 +107,7 @@ def main():
 
         processed_img = og_img.copy()
         cv2.drawContours(processed_img, contours, -1, (255, 255, 255), 2)
-        circles_data = json.loads(circles_to_json(circles, processed_img.shape[:2], cam_focal_length, profile["use_metric"]))
+        circles_data = circles_to_data(circles, processed_img.shape[:2], cam_focal_length, profile["use_metric"])
 
         for i, circle in enumerate(circles):
             circle_center = (int(circle[0][0]), int(circle[0][1]))
