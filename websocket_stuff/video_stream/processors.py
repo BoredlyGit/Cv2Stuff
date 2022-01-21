@@ -2,7 +2,7 @@ import json
 
 import cv2
 
-with open("config.json", "w") as _config_file:
+with open("config.json", "r+") as _config_file:
     _config = json.load(_config_file)
 
 
@@ -22,7 +22,9 @@ class BaseProcessor:
                 the server's settings or enable/disable processors.
     """
     name = NotImplementedError
-    config = _config.get(name, {})
+
+    def __init__(self):
+        self.config = _config.get(self.name, {})
 
     def run(self, frame):
         """
@@ -49,11 +51,13 @@ class BallProcessor(BaseProcessor):
 
     def run(self, frame):
         circles, contours = ball_detector.detect_balls(frame, profile=self.config)
-        return (({"item": "circle",
-                 "kwargs": {
-                     "center": circle[0],
-                     "radius": circle[1],
-                     "color": self.config["draw_color"]}} for circle in circles),
-                ball_detector.circles_to_data(circles, frame.shape[:2], cam_focal_len=self.config["cam_focal_len"],
-                                             use_metric=self.config["use_metric"]))
-cv2.circle()
+        return (tuple({"item": "circle",
+                       "kwargs": {
+                           "center": circle[0],
+                           "radius": circle[1],
+                           "color": self.config["draw_color"]}} for circle in circles),
+
+                ball_detector.circles_to_data(circles,
+                                              frame_dimensions=frame.shape[:2],
+                                              cam_focal_len=self.config["cam_focal_len"],
+                                              use_metric=self.config["use_metric"]))

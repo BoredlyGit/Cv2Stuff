@@ -1,9 +1,11 @@
+import json
 import tornado
 from tornado import web, websocket, ioloop, iostream
 import cv2
 from base64 import b64encode
 import asyncio
 import numpy as np
+from processors import BallProcessor
 
 
 class RawVideoHandler(websocket.WebSocketHandler):
@@ -29,25 +31,35 @@ class RawVideoHandler(websocket.WebSocketHandler):
 
 
 class ProcessedVideoHandler(RawVideoHandler):
+    # TODO: I have no idea if any of this works
+
     def initialize(self, cap):
         super().initialize(cap)
-        self.enabled_processors = []
+        self.enabled_processors = [BallProcessor()]  # TODO: allow enabling/disabling by name - this is just to get it working
 
     def on_message(self, message):
-        # TODO: how separate data??
+        draw_funcs = {
+            "rect": cv2.rectangle,
+            "circle": cv2.circle,
+            "line": cv2.line,
+            "contours": cv2.drawContours
+        }
+
         if message == "frame":
-            raw = self.cap.read()[1]
+            frame = self.cap.read()[1]
             to_draw = []
             data = {}
             for processor in self.enabled_processors:
-                result = processor.run(raw)
-                to_draw.append(result[0])
+                result = processor.run(frame)
+                to_draw += result[0]
                 data[processor.name] = result[1]
+
             for item in to_draw:
-                processed = # TODO: Process
-            self.send_frame(processed)
-        elif message == "get_config":
-            pass
+                print(item)
+                frame = draw_funcs[item["item"]](frame, **item["kwargs"])
+            self.send_frame(frame)
+
+            self.write_message(json.dumps(data))
 
 
 def main():

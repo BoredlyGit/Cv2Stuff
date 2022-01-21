@@ -4,8 +4,8 @@ import numpy as np
 import tkinter
 import pprint
 import json
-import utils
-import gui_elements
+from . import utils
+from . import gui_elements
 # Suggestion: try to detect blobs of balls somehow?
 # TODO: Other bot detection could possibly be done by detecting the bumpers - some combination of text, color, and shape
 # todo: better red detection - maybe invert and look for cyan??
