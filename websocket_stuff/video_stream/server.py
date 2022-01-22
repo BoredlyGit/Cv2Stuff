@@ -6,6 +6,7 @@ from base64 import b64encode
 import asyncio
 import numpy as np
 from processors import BallProcessor
+# Suggestion: Broadcast/waiter style impl, like in 1050-105?
 
 
 class RawVideoHandler(websocket.WebSocketHandler):
