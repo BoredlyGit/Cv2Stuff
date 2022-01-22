@@ -9,7 +9,7 @@ def nothing(x):
     pass
 
 # Load image
-image = cv2.imread('text_recognition/images/capture2.PNG')
+image = cv2.imread('text_recognition/images/less_obvious.jpg')
 image = cv2.resize(image, (1000, 500))
 
 # Create a window
