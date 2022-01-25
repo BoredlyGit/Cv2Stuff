@@ -1,0 +1,70 @@
+Mon Jan 24 23:00:17 2022    profiler_out
+
+   835 function calls (786 primitive calls) in 1.216 seconds
+   Ordered by: internal time
+   **TEST RUN USING images/test_3.jpg ON MY HOME PC**
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+        1    0.652    0.652    0.652    0.652 {waitKey}
+        1    0.382    0.382    0.382    0.382 {method 'forward' of 'cv2.dnn_Net' objects}  # This seems to take up the bulk of the time - not sure if I can do anything about it?
+        1    0.163    0.163    0.163    0.163 {imread}
+        2    0.009    0.004    0.009    0.004 {imshow}
+        1    0.002    0.002    1.216    1.216 C:/Users/D/PycharmProjects/CV2Stuff/text_recognition/east_attempt.py:96(main)
+        1    0.002    0.002    0.002    0.002 {GaussianBlur}
+        2    0.001    0.001    0.001    0.001 {resize}
+        1    0.001    0.001    0.001    0.001 {blobFromImage}
+        1    0.001    0.001    0.395    0.395 C:/Users/D/PycharmProjects/CV2Stuff/text_recognition/east_attempt.py:24(detect_text)
+        2    0.000    0.000    0.000    0.000 {cvtColor}
+       30    0.000    0.000    0.001    0.000 {built-in method builtins.print}
+        1    0.000    0.000    0.000    0.000 {inRange}
+     52/3    0.000    0.000    0.000    0.000 C:\Users\D\PycharmProjects\CV2Stuff\venv\lib\site-packages\numpy\core\arrayprint.py:751(recurser)
+        1    0.000    0.000    0.000    0.000 {method 'setInput' of 'cv2.dnn_Net' objects}
+        3    0.000    0.000    0.000    0.000 {putText}
+        6    0.000    0.000    0.000    0.000 {method 'reduce' of 'numpy.ufunc' objects}
+        1    0.000    0.000    0.000    0.000 {method 'nonzero' of 'numpy.ndarray' objects}
+       49    0.000    0.000    0.000    0.000 C:\Users\D\PycharmProjects\CV2Stuff\venv\lib\site-packages\numpy\core\arrayprint.py:701(_extendLine)
+        3    0.000    0.000    0.000    0.000 C:\Users\D\PycharmProjects\CV2Stuff\venv\lib\site-packages\numpy\core\arrayprint.py:1185(__init__)
+        1    0.000    0.000    1.216    1.216 {built-in method builtins.exec}
+       49    0.000    0.000    0.000    0.000 C:\Users\D\PycharmProjects\CV2Stuff\venv\lib\site-packages\numpy\core\arrayprint.py:715(_extendLine_pretty)
+        1    0.000    0.000    0.000    0.000 {NMSBoxes}
+       49    0.000    0.000    0.000    0.000 C:\Users\D\PycharmProjects\CV2Stuff\venv\lib\site-packages\numpy\core\arrayprint.py:1193(__call__)
+        3    0.000    0.000    0.000    0.000 {rectangle}
+        3    0.000    0.000    0.000    0.000 C:\Users\D\PycharmProjects\CV2Stuff\venv\lib\site-packages\numpy\core\arrayprint.py:416(_get_format_function)
+        3    0.000    0.000    0.001    0.000 C:\Users\D\PycharmProjects\CV2Stuff\venv\lib\site-packages\numpy\core\arrayprint.py:485(_array2string)
+        3    0.000    0.000    0.001    0.000 C:\Users\D\PycharmProjects\CV2Stuff\venv\lib\site-packages\numpy\core\arrayprint.py:523(array2string)
+      321    0.000    0.000    0.000    0.000 {built-in method builtins.len}
+        3    0.000    0.000    0.001    0.000 C:\Users\D\PycharmProjects\CV2Stuff\venv\lib\site-packages\numpy\core\arrayprint.py:468(wrapper)
+        6    0.000    0.000    0.000    0.000 C:\Users\D\PycharmProjects\CV2Stuff\venv\lib\site-packages\numpy\core\fromnumeric.py:69(_wrapreduction)
+        3    0.000    0.000    0.000    0.000 C:\Users\D\PycharmProjects\CV2Stuff\venv\lib\site-packages\numpy\core\arrayprint.py:61(_make_options_dict)
+        3    0.000    0.000    0.000    0.000 {circle}
+        2    0.000    0.000    0.000    0.000 {built-in method numpy.array}
+       49    0.000    0.000    0.000    0.000 {method 'splitlines' of 'str' objects}
+        1    0.000    0.000    1.216    1.216 <string>:1(<module>)
+        3    0.000    0.000    0.000    0.000 C:\Users\D\PycharmProjects\CV2Stuff\venv\lib\site-packages\numpy\core\arrayprint.py:367(_get_formatdict)
+        3    0.000    0.000    0.000    0.000 {built-in method builtins.locals}
+        6    0.000    0.000    0.000    0.000 {built-in method numpy.core._multiarray_umath.implement_array_function}
+        3    0.000    0.000    0.001    0.000 C:\Users\D\PycharmProjects\CV2Stuff\venv\lib\site-packages\numpy\core\arrayprint.py:1534(_array_str_implementation)
+        3    0.000    0.000    0.000    0.000 C:\Users\D\PycharmProjects\CV2Stuff\venv\lib\site-packages\numpy\core\fromnumeric.py:2638(amax)
+       52    0.000    0.000    0.000    0.000 {method 'append' of 'list' objects}
+        3    0.000    0.000    0.000    0.000 C:\Users\D\PycharmProjects\CV2Stuff\venv\lib\site-packages\numpy\core\fromnumeric.py:2763(amin)
+        6    0.000    0.000    0.000    0.000 C:\Users\D\PycharmProjects\CV2Stuff\venv\lib\site-packages\numpy\core\fromnumeric.py:70(<dictcomp>)
+        3    0.000    0.000    0.000    0.000 <__array_function__ internals>:2(amax)
+        3    0.000    0.000    0.000    0.000 C:\Users\D\PycharmProjects\CV2Stuff\venv\lib\site-packages\numpy\core\arrayprint.py:374(<lambda>)
+        3    0.000    0.000    0.000    0.000 C:\Users\D\PycharmProjects\CV2Stuff\venv\lib\site-packages\numpy\core\arrayprint.py:742(_formatArray)
+        3    0.000    0.000    0.000    0.000 {method 'format' of 'str' objects}
+        6    0.000    0.000    0.000    0.000 {built-in method builtins.max}
+        3    0.000    0.000    0.000    0.000 C:\Users\D\PycharmProjects\CV2Stuff\venv\lib\site-packages\numpy\core\arrayprint.py:66(<dictcomp>)
+        3    0.000    0.000    0.000    0.000 <__array_function__ internals>:2(amin)
+       24    0.000    0.000    0.000    0.000 C:/Users/D/PycharmProjects/CV2Stuff/text_recognition/east_attempt.py:83(<genexpr>)
+        9    0.000    0.000    0.000    0.000 {method 'items' of 'dict' objects}
+        9    0.000    0.000    0.000    0.000 {built-in method builtins.issubclass}
+        3    0.000    0.000    0.000    0.000 {method 'rstrip' of 'str' objects}
+        3    0.000    0.000    0.000    0.000 {method 'update' of 'dict' objects}
+        3    0.000    0.000    0.000    0.000 {built-in method numpy.asarray}
+        3    0.000    0.000    0.000    0.000 {method 'copy' of 'dict' objects}
+        3    0.000    0.000    0.000    0.000 {method 'discard' of 'set' objects}
+        3    0.000    0.000    0.000    0.000 {built-in method _thread.get_ident}
+        1    0.000    0.000    0.000    0.000 {method 'disable' of '_lsprof.Profiler' objects}
+        3    0.000    0.000    0.000    0.000 C:\Users\D\PycharmProjects\CV2Stuff\venv\lib\site-packages\numpy\core\fromnumeric.py:2633(_amax_dispatcher)
+        3    0.000    0.000    0.000    0.000 C:\Users\D\PycharmProjects\CV2Stuff\venv\lib\site-packages\numpy\core\fromnumeric.py:2758(_amin_dispatcher)
+        3    0.000    0.000    0.000    0.000 {method 'add' of 'set' objects}
+        3    0.000    0.000    0.000    0.000 {built-in method builtins.id}
