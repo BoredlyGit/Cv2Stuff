@@ -21,18 +21,16 @@ output_layers = [
 ]
 
 
-def detect_text(img, min_score):
-    # TODO!!: combine with color masking using red/blue contours, ref_pt, and pointPolygonTest()
-    # TODO: gotta go fast(er)
+def detect_text(img, min_score=0.85, use_nms=True, text_color_range=NotImplemented):
     # SUGGESTION: crop to bottom of image cause that's where relevant bumpers prob are? - could increase speed too
     h = 256
     w = 320
-    img = cv2.GaussianBlur(cv2.resize(img, (w, h)), (3, 3), 0)
-    mask = cv2.inRange(cv2.cvtColor(img, cv2.COLOR_BGR2HSV), np.array([0, 0, 150]), np.array([179, 75, 255]))
-    # mask = np.bitwise_not(mask)  # EAST only works correctly with white on black on binary images for some reason
-    cv2.imshow("mask", mask)
+    # img = cv2.resize(img, (w, h))
+    text_mask = cv2.inRange(cv2.cvtColor(img, cv2.COLOR_BGR2HSV), np.array([0, 0, 150]), np.array([179, 75, 255]))
 
-    blob = dnn.blobFromImage(cv2.cvtColor(mask, cv2.COLOR_GRAY2BGR), scalefactor=1, swapRB=True, crop=False)  # mean subtraction (subtracts average color from all pixels in image)
+    cv2.imshow("text mask", text_mask)
+
+    blob = dnn.blobFromImage(cv2.cvtColor(text_mask, cv2.COLOR_GRAY2BGR), scalefactor=1, swapRB=True, crop=False)  # mean subtraction (subtracts average color from all pixels in image)
 
     east.setInput(blob)
     scores, geometry = east.forward(outBlobNames=output_layers)  # see ln 19 - will return the outputs of those layers (this is kinda slow - ~0.3s per call?)
@@ -55,10 +53,8 @@ def detect_text(img, min_score):
         score = scores[y][x]
 
         pos_x, pos_y = (x*4, y*4)
-        # Suggestion: masybe deal with rotation - output are rotated rectangles. current impl results in some odd
+        # Suggestion: maybe deal with rotation - output are rotated rectangles. current impl results in some odd
         #  bounding boxes, especially as angle approaches a multiple of 90
-        # TODO: are bounding boxes even necessary if only checking if point where EAST sees text is in a contour? - this
-        #   might also remove the need form NMSBoxes, maybe more points = more likely bumper??
         # angle = angles[y][x]
 
         """
@@ -81,49 +77,65 @@ def detect_text(img, min_score):
         boxes.append(((x1, y1, w, h), (pos_x, pos_y)))
         box_scores.append(score)
 
-    nms_indexes = dnn.NMSBoxes(list(box[0] for box in boxes), box_scores, min_score, 0.05)
-    print("scores: ", box_scores)
-    print("boxes: ", nms_indexes)
 
     ret_scores = []
     ret_boxes = []
-    for index in nms_indexes:
-        ret_boxes.append((boxes[index]))
-        ret_scores.append(box_scores[index])
+
+    if use_nms:
+        nms_indexes = dnn.NMSBoxes(list(box[0] for box in boxes), box_scores, min_score, 0.05)
+        for index in nms_indexes:
+            ret_boxes.append((boxes[index]))
+            ret_scores.append(box_scores[index])
+    else:
+        ret_boxes = boxes
+        ret_scores = scores
+
+    print("scores: ", box_scores)
 
     return ret_boxes, ret_scores
 
 
+def detect_bumpers(img, min_text_score):
+    # TODO!!: combine with color masking using red/blue contours, ref_pt, and pointPolygonTest()
+    #  (also subtract canny and maybe filter with aspect ratio?)
+    # TODO: gotta go fast(er), but east itself seems to be the main bottleneck.
+    # TODO: are bounding boxes even necessary if only checking if point where EAST sees text is in a contour? - this
+    #   might also remove the need form NMSBoxes, maybe more points = more likely bumper??
+    boxes, scores = detect_text(img)
+
+    blue_mask = None
+    red_mask = None
+
+
 def main():
     min_score = 0.85
-    use_video = False
-    img_path = "images/test_3.jpg"
+    use_video = True
+    img_path = "images/test_2.jpg"
+    gaussian_kernel = (1, 1)  # note: this is applied to the resized image. Maybe change that?
 
     if use_video:
         cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
     else:
         img = cv2.imread(img_path)
 
-    for i in range(10):  # for use with testing video w/ profiler
-    # while True:
+    # for i in range(10):  # for use with testing video w/ profiler
+    while True:
         if use_video:
-            frame_ready, img = cap.read()
-            if not frame_ready:
-                continue
+            _, img = cap.read()
 
-        h = 256
-        w = 320
-        img = cv2.resize(img, (w, h))
-        boxes, scores = detect_text(img, min_score)
+        h = 288
+        w = 352
+        img = cv2.GaussianBlur((cv2.resize(img, (w, h))), gaussian_kernel, 0)
+        boxes, scores = detect_text(img, min_score, use_nms=False)
 
         for i, box in enumerate(boxes):
             print(i)
             rect, ref_pt = box
             x, y, w, h = rect
 
-            cv2.rectangle(img, (x, y), (x + w, y + h), (0, 255, 0))
+            # cv2.rectangle(img, (x, y), (x + w, y + h), (0, 255, 0))
             cv2.circle(img, ref_pt, 10, (255, 0, 255))
-            cv2.putText(img, str(scores[i]), (x, y), cv2.FONT_HERSHEY_DUPLEX, 1, (0, 255, 0))
+            # cv2.putText(img, str(scores[i]), (x, y), cv2.FONT_HERSHEY_DUPLEX, 1, (0, 255, 0))
 
         cv2.imshow("final", img)
 
