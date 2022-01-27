@@ -1,4 +1,5 @@
 import cProfile
+import json
 import pstats
 import cv2
 from cv2 import dnn
@@ -19,15 +20,18 @@ output_layers = [
     "feature_fusion/Conv_7/Sigmoid",  # Probability of a region containing any text
     "feature_fusion/concat_3",  # Feature map of image ("geometry")
 ]
+with open("hsv_ranges.json", "r+") as hsv_ranges_json:
+    hsv_ranges = json.load(hsv_ranges_json)
 
 
-def detect_text(img, min_score=0.85, use_nms=True, text_color_range=NotImplemented):
+def detect_text(img, min_score=0.85, use_nms=True):
     # SUGGESTION: crop to bottom of image cause that's where relevant bumpers prob are? - could increase speed too
+    # Note that disabling nms may cause severe performance drops
     h = 256
     w = 320
     # img = cv2.resize(img, (w, h))
+    # TODO: move all non-east based processing out of this function
     text_mask = cv2.inRange(cv2.cvtColor(img, cv2.COLOR_BGR2HSV), np.array([0, 0, 150]), np.array([179, 75, 255]))
-
     cv2.imshow("text mask", text_mask)
 
     blob = dnn.blobFromImage(cv2.cvtColor(text_mask, cv2.COLOR_GRAY2BGR), scalefactor=1, swapRB=True, crop=False)  # mean subtraction (subtracts average color from all pixels in image)
@@ -42,13 +46,11 @@ def detect_text(img, min_score=0.85, use_nms=True, text_color_range=NotImplement
     box_scores = []
     box_dst_up, box_dst_down, box_dst_right, box_dst_left, angles = geometry
 
-    # Optimize by using numpy to filter out good scores and get indexes of high scores
-    good_y, good_x = (scores >= min_score).nonzero()  # noqa
+    # Optimize by using numpy to filter out good scores and get indexes of high scores instead of iterating all items
+    good_y, good_x = (scores >= min_score).nonzero()
     print(good_x, good_y)
 
-    print(scores.shape)
-    for i, y in enumerate(good_y):
-        x = good_x[i]
+    for y, x in zip(good_y, good_x):
         print(f"row: {y} col: {x}")
         score = scores[y][x]
 
@@ -98,19 +100,21 @@ def detect_text(img, min_score=0.85, use_nms=True, text_color_range=NotImplement
 def detect_bumpers(img, min_text_score):
     # TODO!!: combine with color masking using red/blue contours, ref_pt, and pointPolygonTest()
     #  (also subtract canny and maybe filter with aspect ratio?)
-    # TODO: gotta go fast(er), but east itself seems to be the main bottleneck.
+    # SUGGESTION: gotta go fast(er), but east itself seems to be the main bottleneck.
     # TODO: are bounding boxes even necessary if only checking if point where EAST sees text is in a contour? - this
     #   might also remove the need form NMSBoxes, maybe more points = more likely bumper??
+    # TODO: Mask first, then pass to ocr - only one call since net.forward() calls are expensive
+    blue_mask = cv2.inRange(img, hsv_ranges["blue_bumper"]["min"], hsv_ranges["blue_bumper"]["max"])
+    red_mask = cv2.inRange(img, hsv_ranges["red_bumper"]["min"], hsv_ranges["red_bumper"]["max"])
+
     boxes, scores = detect_text(img)
 
-    blue_mask = None
-    red_mask = None
 
 
 def main():
     min_score = 0.85
-    use_video = True
-    img_path = "images/test_2.jpg"
+    use_video = False
+    img_path = "images/test_6.jpg"
     gaussian_kernel = (1, 1)  # note: this is applied to the resized image. Maybe change that?
 
     if use_video:
@@ -123,10 +127,10 @@ def main():
         if use_video:
             _, img = cap.read()
 
-        h = 288
-        w = 352
+        h = 192
+        w = 288
         img = cv2.GaussianBlur((cv2.resize(img, (w, h))), gaussian_kernel, 0)
-        boxes, scores = detect_text(img, min_score, use_nms=False)
+        boxes, scores = detect_text(img, min_score, use_nms=True)
 
         for i, box in enumerate(boxes):
             print(i)
