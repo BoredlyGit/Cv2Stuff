@@ -20,6 +20,7 @@ def distance_to_object(focal_length, real_width, width_in_image):
     """
     return (real_width * focal_length)/width_in_image
 
+
 def draw_text_box(img, text, pos, font_kwargs):
     text_size, _ = cv2.getTextSize(text, thickness=1, **font_kwargs)
     cv2.rectangle(img, pos, (pos[0] + text_size[0], pos[1] - text_size[1]), (0, 0, 0), thickness=cv2.FILLED)
