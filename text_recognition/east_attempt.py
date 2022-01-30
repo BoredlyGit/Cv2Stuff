@@ -24,12 +24,9 @@ with open("hsv_ranges.json", "r+") as hsv_ranges_json:
     hsv_ranges = json.load(hsv_ranges_json)
 
 
-def detect_text(img, min_score=0.85, use_nms=False):
+def detect_text(img, min_score=0.85, use_nms=True):
     # SUGGESTION: crop to bottom of image cause that's where relevant bumpers prob are? - could increase speed too
-    # Note that disabling nms may cause severe performance drops
-    # h = 256
-    # w = 320
-    # img = cv2.resize(img, (w, h))
+
     # TODO: move all non-east based processing out of this function
     # text_mask = cv2.inRange(cv2.cvtColor(img, cv2.COLOR_BGR2HSV), np.array([0, 0, 150]), np.array([179, 75, 255]))
     cv2.imshow("text mask", img)
@@ -115,12 +112,12 @@ def detect_bumpers(img, min_text_score, min_contour_area):
         # print(hsv_range)
         red_mask = np.bitwise_or(red_mask, cv2.inRange(img, np.array(hsv_range["min"]), np.array(hsv_range["max"])))
 
-    # noise removal (erode to remove, re-dilate to put back what isn't noise)
-    red_mask = cv2.erode(red_mask, (3, 3))
-    red_mask = cv2.dilate(red_mask, (3, 3))
-
-    blue_mask = cv2.erode(blue_mask, (3, 3))
-    blue_mask = cv2.dilate(blue_mask, (3, 3))
+    # IGNORE - significantly hurts performance | noise removal
+    # red_mask = cv2.erode(red_mask, (3, 3))
+    # red_mask = cv2.dilate(red_mask, (3, 3))
+    #
+    # blue_mask = cv2.erode(blue_mask, (3, 3))
+    # blue_mask = cv2.dilate(blue_mask, (3, 3))
 
     blue_contours, _ = cv2.findContours(blue_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     red_contours, _ = cv2.findContours(red_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -128,40 +125,35 @@ def detect_bumpers(img, min_text_score, min_contour_area):
     red_contours = sorted([cnt for cnt in red_contours if cv2.contourArea(cnt) >= min_contour_area], key=cv2.contourArea)
 
     cv2.imshow("blue_mask", blue_mask)
-    cv2.imshow('red_mask', red_mask)
+    cv2.imshow('red_mask', red_mask)  # performs better with inverted mask - I have no idea why.
 
     mask = np.bitwise_or(red_mask, blue_mask)
     mask = np.bitwise_not(mask)
 
-    boxes, scores = detect_text(mask, min_text_score)
+    boxes, scores = detect_text(mask, min_text_score, use_nms=False)
     boxes = [box for box in boxes if box[1]]
 
     blue_bumpers, red_bumpers = [], []
     for i, box in enumerate(boxes):
         rect, ref_pt = box
-        # x, y, w, h = rect
-        print(ref_pt, type(ref_pt[0]))
 
         for contour in blue_contours:
             if cv2.pointPolygonTest(contour, ref_pt, measureDist=False) == 1:
-                cv2.circle(img, ref_pt, 10, (255, 255, 255))
-                blue_bumpers.append(rect)
+                blue_bumpers.append(box)
 
-        # cv2.rectangle(img, (x, y), (x + w, y + h), (0, 255, 0))
         for contour in red_contours:
             if cv2.pointPolygonTest(contour, ref_pt, measureDist=False) == 1:
-                cv2.circle(img, ref_pt, 10, (255, 255, 255))
-                red_bumpers.append(rect)
-
+                red_bumpers.append(box)
 
         # cv2.putText(img, str(scores[i]), (x, y), cv2.FONT_HERSHEY_DUPLEX, 1, (0, 255, 0))
+        cv2.circle(img, ref_pt, 10, (255, 255, 255))
     cv2.imshow("TEXT", img)
     return {"red": red_bumpers, "blue": blue_bumpers}
 
 
 def main():
     min_text_score = 0.85
-    use_video = True
+    use_video = False
     img_path = "images/test_3.jpg"
     gaussian_kernel = (1, 1)  # note: this is applied to the resized image
 
@@ -181,6 +173,15 @@ def main():
 
         # img = cv2.GaussianBlur((cv2.resize(img, (w, h))), gaussian_kernel, 0)
         bumpers = detect_bumpers(img, min_text_score, 100)
+
+        for color in ("red", "blue"):
+            for bumper in bumpers[color]:
+                print(bumper)
+                rect, ref_pt = bumper
+                x, y, w, h = rect
+                cv2.rectangle(img, (x, y), (x + w, y + h), (0, 255, 0))
+                cv2.circle(img, ref_pt, 10, (255, 255, 255))
+                cv2.putText(img, color, ref_pt, cv2.FONT_HERSHEY_DUPLEX, 1, (255, 255, 255))
 
         cv2.imshow("final", img)
 
